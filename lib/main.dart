@@ -33,8 +33,8 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleFavorite(){
-    if(favorites.contains(current)) {
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
       favorites.remove(current);
     } else {
       favorites.add(current);
@@ -43,21 +43,85 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  
+  var selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = Placeholder();
+        break;
+      default:
+        throw UnimplementedError("No widget for $selectedIndex");
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  extended: constraints.maxWidth >= 600,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (value) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+}
+
+
+class GeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
     IconData icon;
-    if(appState.favorites.contains(pair)) {
+    if (appState.favorites.contains(pair)) {
       icon = Icons.favorite;
     } else {
       icon = Icons.favorite_border;
     }
 
-    return Scaffold(
-      body: Center(
+    return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -69,7 +133,7 @@ class MyHomePage extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () {
                     appState.toggleFavorite();
-                  }, 
+                  },
                   icon: Icon(icon),
                   label: Text('Like'),
                 ),
@@ -81,19 +145,15 @@ class MyHomePage extends StatelessWidget {
                   child: Text('next'),
                 ),
               ],
-            )
-            ],
+            ),
+          ],
         ),
-      ),
-    );
+      );
   }
 }
 
 class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
+  const BigCard({super.key, required this.pair});
 
   final WordPair pair;
 
@@ -102,7 +162,6 @@ class BigCard extends StatelessWidget {
     final theme = Theme.of(context);
     final style = theme.textTheme.displayMedium!.copyWith(
       color: theme.colorScheme.onPrimary,
-
     );
 
     return Card(
@@ -110,9 +169,8 @@ class BigCard extends StatelessWidget {
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: 
-        Text(
-          pair.asLowerCase, 
+        child: Text(
+          "[ ${pair.asCamelCase} ]",
           style: style,
           semanticsLabel: "${pair.first} ${pair.second}",
         ),
